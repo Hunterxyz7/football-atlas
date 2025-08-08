@@ -1,0 +1,1303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Football Atlas - The Ultimate Player Name Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #667eea 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 40% 80%, rgba(120, 219, 255, 0.3) 0%, transparent 50%);
+            animation: backgroundFlow 20s ease-in-out infinite;
+        }
+
+        @keyframes backgroundFlow {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.8; transform: scale(1.1); }
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 25px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+            padding: 40px;
+            width: 100%;
+            max-width: 700px;
+            text-align: center;
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            position: relative;
+            z-index: 1;
+        }
+
+        .title {
+            font-size: 3rem;
+            font-weight: bold;
+            background: linear-gradient(45deg, #667eea, #764ba2, #f093fb);
+            background-size: 200% 200%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+            animation: gradientShift 3s ease-in-out infinite;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 1.1rem;
+            margin-bottom: 30px;
+            font-weight: 500;
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .football-icon {
+            font-size: 5rem;
+            margin-bottom: 20px;
+            animation: float 3s ease-in-out infinite;
+            filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.1));
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            33% { transform: translateY(-20px) rotate(5deg); }
+            66% { transform: translateY(-10px) rotate(-5deg); }
+        }
+
+        .start-screen {
+            display: block;
+        }
+
+        .game-screen {
+            display: none;
+        }
+
+        .instructions {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+            border-left: 4px solid #667eea;
+            padding: 25px;
+            margin: 25px 0;
+            border-radius: 15px;
+            text-align: left;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .instructions::before {
+            content: '⚽';
+            position: absolute;
+            right: 20px;
+            top: 20px;
+            font-size: 2rem;
+            opacity: 0.1;
+        }
+
+        .instructions h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+
+        .instructions ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .instructions li {
+            padding: 8px 0;
+            position: relative;
+            padding-left: 30px;
+        }
+
+        .instructions li::before {
+            content: '⚡';
+            position: absolute;
+            left: 0;
+            top: 8px;
+        }
+
+        .start-btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 18px 50px;
+            font-size: 1.3rem;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.4s ease;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .start-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.5s;
+        }
+
+        .start-btn:hover::before {
+            left: 100%;
+        }
+
+        .start-btn:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 15px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        .difficulty-selector {
+            margin: 20px 0;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .difficulty-btn {
+            padding: 10px 20px;
+            border: 2px solid #667eea;
+            background: transparent;
+            color: #667eea;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+
+        .difficulty-btn.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .difficulty-btn:hover {
+            background: #667eea;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .game-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .info-card {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+            padding: 20px;
+            border-radius: 15px;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(102, 126, 234, 0.2);
+        }
+
+        .info-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+        }
+
+        .info-card h4 {
+            color: #667eea;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .info-card p {
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .streak-indicator {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            display: inline-block;
+            margin-top: 5px;
+        }
+
+        .turn-indicator {
+            font-size: 1.4rem;
+            margin: 25px 0;
+            padding: 20px;
+            border-radius: 15px;
+            font-weight: bold;
+            position: relative;
+            overflow: hidden;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+
+        .user-turn {
+            background: linear-gradient(135deg, rgba(76, 175, 80, 0.15), rgba(139, 195, 74, 0.15));
+            color: #4CAF50;
+            border-left: 5px solid #4CAF50;
+        }
+
+        .computer-turn {
+            background: linear-gradient(135deg, rgba(255, 152, 0, 0.15), rgba(255, 193, 7, 0.15));
+            color: #FF9800;
+            border-left: 5px solid #FF9800;
+        }
+
+        .game-over {
+            background: linear-gradient(135deg, rgba(244, 67, 54, 0.15), rgba(233, 30, 99, 0.15));
+            color: #F44336;
+            border-left: 5px solid #F44336;
+        }
+
+        .input-area {
+            margin: 25px 0;
+            position: relative;
+        }
+
+        .player-input {
+            width: 100%;
+            padding: 18px 20px;
+            font-size: 1.2rem;
+            border: 2px solid #ddd;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.9);
+        }
+
+        .player-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 20px rgba(102, 126, 234, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .suggestions {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+        }
+
+        .suggestion-item {
+            padding: 10px 15px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .suggestion-item:hover {
+            background: rgba(102, 126, 234, 0.1);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .submit-btn, .hint-btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.1rem;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hint-btn {
+            background: linear-gradient(45deg, #FF9800, #F57C00);
+        }
+
+        .submit-btn:hover, .hint-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .submit-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .restart-btn {
+            background: linear-gradient(45deg, #764ba2, #667eea);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.1rem;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+
+        .restart-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(118, 75, 162, 0.3);
+        }
+
+        .message {
+            padding: 18px;
+            border-radius: 12px;
+            margin: 20px 0;
+            font-weight: bold;
+            position: relative;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message.success {
+            background: linear-gradient(135deg, rgba(76, 175, 80, 0.1), rgba(139, 195, 74, 0.1));
+            color: #4CAF50;
+            border-left: 4px solid #4CAF50;
+        }
+
+        .message.error {
+            background: linear-gradient(135deg, rgba(244, 67, 54, 0.1), rgba(233, 30, 99, 0.1));
+            color: #F44336;
+            border-left: 4px solid #F44336;
+        }
+
+        .message.info {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+            color: #667eea;
+            border-left: 4px solid #667eea;
+        }
+
+        .message.hint {
+            background: linear-gradient(135deg, rgba(255, 152, 0, 0.1), rgba(255, 193, 7, 0.1));
+            color: #FF9800;
+            border-left: 4px solid #FF9800;
+        }
+
+        .timer {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #667eea;
+            margin: 10px 0;
+        }
+
+        .timer.warning {
+            color: #FF9800;
+            animation: timerPulse 1s infinite;
+        }
+
+        .timer.danger {
+            color: #F44336;
+            animation: timerPulse 0.5s infinite;
+        }
+
+        @keyframes timerPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .history {
+            text-align: left;
+            max-height: 250px;
+            overflow-y: auto;
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.03), rgba(0, 0, 0, 0.08));
+            padding: 20px;
+            border-radius: 15px;
+            margin-top: 25px;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .history h4 {
+            margin-bottom: 15px;
+            color: #333;
+            font-size: 1.2rem;
+        }
+
+        .history-item {
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .history-item:last-child {
+            border-bottom: none;
+        }
+
+        .history-player {
+            font-weight: bold;
+        }
+
+        .history-time {
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .achievements {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .achievement {
+            background: linear-gradient(45deg, #FFD700, #FFA500);
+            color: #333;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            animation: achievementPop 0.5s ease-out;
+        }
+
+        @keyframes achievementPop {
+            0% { transform: scale(0); }
+            80% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+
+        .league-table {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .league-table h4 {
+            color: #667eea;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 10px;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+
+        .stat-value {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: #666;
+            text-transform: uppercase;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 25px;
+                margin: 10px;
+            }
+
+            .title {
+                font-size: 2.2rem;
+            }
+
+            .football-icon {
+                font-size: 3.5rem;
+            }
+
+            .game-info {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+
+            .difficulty-selector {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+
+        .confetti {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            background: #667eea;
+            top: -10px;
+            animation: confetti-fall 3s linear infinite;
+            z-index: 1000;
+        }
+
+        @keyframes confetti-fall {
+            0% { transform: translateY(-100vh) rotate(0deg); }
+            100% { transform: translateY(100vh) rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="startScreen" class="start-screen">
+            <div class="football-icon">⚽</div>
+            <h1 class="title">Football Atlas</h1>
+            <p class="subtitle">The Ultimate Player Name Challenge</p>
+            
+            <div class="difficulty-selector">
+                <button class="difficulty-btn active" data-difficulty="normal" onclick="setDifficulty('normal')">
+                    ⚡ Normal
+                </button>
+                <button class="difficulty-btn" data-difficulty="timed" onclick="setDifficulty('timed')">
+                    ⏰ Timed (30s)
+                </button>
+                <button class="difficulty-btn" data-difficulty="blitz" onclick="setDifficulty('blitz')">
+                    🚀 Blitz (15s)
+                </button>
+            </div>
+
+            <div class="instructions">
+                <h3>🎯 How to Master the Game:</h3>
+                <ul>
+                    <li>Name a football player to start the chain</li>
+                    <li>Each player must start with the last letter of the previous name</li>
+                    <li>No player can be repeated during the game</li>
+                    <li>Beat the computer by finding names they can't match</li>
+                    <li>Earn achievements and track your best streaks!</li>
+                </ul>
+            </div>
+            <button class="start-btn" onclick="startGame()">⚽ Start Playing</button>
+        </div>
+
+        <div id="gameScreen" class="game-screen">
+            <h1 class="title">Football Atlas</h1>
+            
+            <div id="timer" class="timer" style="display: none;"></div>
+            
+            <div class="game-info">
+                <div class="info-card">
+                    <h4>Players Used</h4>
+                    <p id="playersUsed">0</p>
+                </div>
+                <div class="info-card">
+                    <h4>Current Letter</h4>
+                    <p id="currentLetter">-</p>
+                </div>
+                <div class="info-card">
+                    <h4>Your Score</h4>
+                    <p id="userScore">0</p>
+                    <div id="streak" class="streak-indicator" style="display: none;"></div>
+                </div>
+                <div class="info-card">
+                    <h4>Difficulty</h4>
+                    <p id="difficultyDisplay">Normal</p>
+                </div>
+            </div>
+
+            <div id="turnIndicator" class="turn-indicator user-turn">
+                Your Turn - Name a Football Player!
+            </div>
+
+            <div class="game-area">
+                <div class="input-area">
+                    <input type="text" id="playerInput" class="player-input" placeholder="Enter football player name..." onkeypress="handleKeyPress(event)" oninput="handleInputChange(event)" autocomplete="off">
+                    <div id="suggestions" class="suggestions"></div>
+                    
+                    <div class="button-group">
+                        <button id="submitBtn" class="submit-btn" onclick="submitPlayer()">⚡ Submit</button>
+                        <button id="hintBtn" class="hint-btn" onclick="getHint()">💡 Hint</button>
+                    </div>
+                    <br><br>
+                    <button class="restart-btn" onclick="restartGame()">🔄 New Game</button>
+                </div>
+
+                <div id="message" class="message" style="display: none;"></div>
+            </div>
+
+            <div id="achievements" class="achievements"></div>
+
+            <div class="history">
+                <h4>🏆 Game History:</h4>
+                <div id="historyList"></div>
+            </div>
+
+            <div class="league-table">
+                <h4>📊 Your Stats</h4>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-value" id="totalGames">0</div>
+                        <div class="stat-label">Games</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="gamesWon">0</div>
+                        <div class="stat-label">Won</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="bestStreak">0</div>
+                        <div class="stat-label">Best Streak</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="avgScore">0</div>
+                        <div class="stat-label">Avg Score</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Enhanced football players database with more players
+        const footballPlayers = [
+            "Lionel Messi", "Cristiano Ronaldo", "Neymar Jr", "Kylian Mbappe", "Erling Haaland",
+            "Kevin De Bruyne", "Virgil van Dijk", "Mohamed Salah", "Harry Kane", "Sadio Mane",
+            "Robert Lewandowski", "Luka Modric", "Toni Kroos", "Sergio Ramos", "Gerard Pique",
+            "Karim Benzema", "Antoine Griezmann", "Paul Pogba", "N'Golo Kante", "Raheem Sterling",
+            "Jadon Sancho", "Jack Grealish", "Phil Foden", "Mason Mount", "Declan Rice",
+            "Bruno Fernandes", "Marcus Rashford", "Jamal Musiala", "Pedri", "Gavi",
+            "Ansu Fati", "Vinicius Junior", "Eduardo Camavinga", "Jude Bellingham", "Bukayo Saka",
+            "Emile Smith Rowe", "Mason Greenwood", "Kai Havertz", "Timo Werner", "Christian Pulisic",
+            "Romelu Lukaku", "Lautaro Martinez", "Nicolo Barella", "Federico Chiesa", "Lorenzo Insigne",
+            "Ciro Immobile", "Andrea Belotti", "Dusan Vlahovic", "Alvaro Morata", "Ferran Torres",
+            "Sergio Busquets", "Jordi Alba", "Marc-Andre ter Stegen", "Alisson Becker", "Ederson",
+            "Thibaut Courtois", "Jan Oblak", "Manuel Neuer", "Joshua Kimmich", "Leon Goretzka",
+            "Serge Gnabry", "Leroy Sane", "Thomas Muller", "Marco Reus", "Mats Hummels",
+            "Antonio Rudiger", "Florian Wirtz", "Youssoufa Moukoko", "Giovanni Reyna", "Tyler Adams",
+            "Weston McKennie", "Yunus Musah", "Ricardo Pepi", "Folarin Balogun", "Tammy Abraham",
+            "Fikayo Tomori", "Reece James", "Ben Chilwell", "Thiago Silva", "Cesar Azpilicueta",
+            "Mateo Kovacic", "Jorginho", "Achraf Hakimi", "Marquinhos", "Presnel Kimpembe",
+            "Marco Verratti", "Vitinha", "Ousmane Dembele", "Kingsley Coman", "Christopher Nkunku",
+            "Dayot Upamecano", "Jules Kounde", "William Saliba", "Gabriel Martinelli", "Martin Odegaard",
+            "Thomas Partey", "Granit Xhaka", "Alexandre Lacazette", "Pierre-Emerick Aubameyang", "Olivier Giroud",
+            "Theo Hernandez", "Mike Maignan", "Rafael Leao", "Ismael Bennacer", "Sandro Tonali",
+            "Davide Calabria", "Alessandro Bastoni", "Nicolo Zaniolo", "Gianluca Scamacca", "Wilfried Gnonto",
+            "Destiny Udogie", "Zlatan Ibrahimovic", "Andres Iniesta", "Xavi Hernandez", "David Villa",
+            "Fernando Torres", "Sergio Aguero", "David Silva", "Yaya Toure", "Vincent Kompany",
+            "Eden Hazard", "Gareth Bale", "Luis Suarez", "Diego Forlan", "Carlos Tevez",
+            "Angel Di Maria", "Gonzalo Higuain", "Paulo Dybala", "Mauro Icardi", "Edin Dzeko",
+            "Ivan Perisic", "Luka Jovic", "Aleksandar Mitrovic", "Nikola Vlasic", "Mateo Kovacic",
+            "Ivan Rakitic", "Marcelo Brozovic", "Milan Skriniar", "Stefan de Vrij", "Alessandro Florenzi",
+            "Federico Bernardeschi", "Domenico Berardi", "Giacomo Raspadori", "Matteo Politano", "Victor Osimhen",
+            "Khvicha Kvaratskhelia", "Piotr Zielinski", "Fabian Ruiz", "Stanislav Lobotka", "Giovanni Di Lorenzo",
+            "Kalidou Koulibaly", "Amir Rrahmani", "Alex Meret", "Hirving Lozano", "Dries Mertens",
+            "Jose Callejon", "Marek Hamsik", "Fabio Quagliarella", "Francesco Totti", "Daniele De Rossi",
+            "Gianluigi Buffon", "Franco Baresi", "Paolo Maldini", "Roberto Baggio", "Alessandro Del Piero",
+            "Francesco Totti", "Gennaro Gattuso", "Andrea Pirlo", "Fabio Cannavaro", "Gianluca Vialli"
+        ];
+
+        // Game state with enhanced features
+        let gameState = {
+            usedPlayers: new Set(),
+            currentLetter: '',
+            userScore: 0,
+            gameHistory: [],
+            isUserTurn: true,
+            gameActive: false,
+            difficulty: 'normal',
+            timeLeft: 0,
+            timerInterval: null,
+            currentStreak: 0,
+            hintsUsed: 0,
+            gameStartTime: 0,
+            achievements: [],
+            stats: {
+                totalGames: parseInt(localStorage.getItem('totalGames') || '0'),
+                gamesWon: parseInt(localStorage.getItem('gamesWon') || '0'),
+                bestStreak: parseInt(localStorage.getItem('bestStreak') || '0'),
+                totalScore: parseInt(localStorage.getItem('totalScore') || '0')
+            }
+        };
+
+        const achievements = {
+            firstWin: { name: "🏆 First Victory", description: "Win your first game!" },
+            streakMaster: { name: "🔥 Streak Master", description: "Get 5 players in a row!" },
+            speedster: { name: "⚡ Speedster", description: "Answer within 5 seconds!" },
+            noHints: { name: "🧠 Pure Skill", description: "Win without using hints!" },
+            longGame: { name: "🏃 Marathon", description: "Play with 20+ players!" },
+            perfectGame: { name: "💎 Perfect Game", description: "Win with 10+ score, no hints!" }
+        };
+
+        function setDifficulty(difficulty) {
+            gameState.difficulty = difficulty;
+            document.querySelectorAll('.difficulty-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelector(`[data-difficulty="${difficulty}"]`).classList.add('active');
+        }
+
+        function startGame() {
+            document.getElementById('startScreen').style.display = 'none';
+            document.getElementById('gameScreen').style.display = 'block';
+            gameState.gameActive = true;
+            gameState.isUserTurn = true;
+            gameState.gameStartTime = Date.now();
+            gameState.currentStreak = 0;
+            gameState.hintsUsed = 0;
+            
+            updateDifficultyDisplay();
+            updateTurnIndicator();
+            updateGameInfo();
+            updateStats();
+            
+            if (gameState.difficulty === 'timed') {
+                startTimer(30);
+            } else if (gameState.difficulty === 'blitz') {
+                startTimer(15);
+            }
+            
+            document.getElementById('playerInput').focus();
+        }
+
+        function startTimer(seconds) {
+            gameState.timeLeft = seconds;
+            document.getElementById('timer').style.display = 'block';
+            updateTimer();
+            
+            gameState.timerInterval = setInterval(() => {
+                gameState.timeLeft--;
+                updateTimer();
+                
+                if (gameState.timeLeft <= 0) {
+                    clearInterval(gameState.timerInterval);
+                    timeOut();
+                }
+            }, 1000);
+        }
+
+        function updateTimer() {
+            const timer = document.getElementById('timer');
+            timer.textContent = `⏰ ${gameState.timeLeft}s`;
+            
+            timer.className = 'timer';
+            if (gameState.timeLeft <= 5) {
+                timer.className += ' danger';
+            } else if (gameState.timeLeft <= 10) {
+                timer.className += ' warning';
+            }
+        }
+
+        function timeOut() {
+            if (gameState.gameActive && gameState.isUserTurn) {
+                showMessage('⏰ Time\'s up! Computer wins this round.', 'error');
+                computerTurn();
+            }
+        }
+
+        function restartTimer() {
+            if (gameState.difficulty === 'timed') {
+                startTimer(30);
+            } else if (gameState.difficulty === 'blitz') {
+                startTimer(15);
+            }
+        }
+
+        function restartGame() {
+            if (gameState.timerInterval) {
+                clearInterval(gameState.timerInterval);
+            }
+            
+            gameState = {
+                ...gameState,
+                usedPlayers: new Set(),
+                currentLetter: '',
+                userScore: 0,
+                gameHistory: [],
+                isUserTurn: true,
+                gameActive: true,
+                timeLeft: 0,
+                timerInterval: null,
+                currentStreak: 0,
+                hintsUsed: 0,
+                gameStartTime: Date.now(),
+                achievements: []
+            };
+            
+            document.getElementById('playerInput').value = '';
+            document.getElementById('historyList').innerHTML = '';
+            document.getElementById('achievements').innerHTML = '';
+            document.getElementById('timer').style.display = 'none';
+            hideMessage();
+            updateTurnIndicator();
+            updateGameInfo();
+            
+            if (gameState.difficulty === 'timed') {
+                startTimer(30);
+            } else if (gameState.difficulty === 'blitz') {
+                startTimer(15);
+            }
+            
+            document.getElementById('playerInput').focus();
+        }
+
+        function updateDifficultyDisplay() {
+            const difficultyMap = {
+                'normal': 'Normal',
+                'timed': 'Timed',
+                'blitz': 'Blitz'
+            };
+            document.getElementById('difficultyDisplay').textContent = difficultyMap[gameState.difficulty];
+        }
+
+        function updateGameInfo() {
+            document.getElementById('playersUsed').textContent = gameState.usedPlayers.size;
+            document.getElementById('currentLetter').textContent = gameState.currentLetter.toUpperCase() || '-';
+            document.getElementById('userScore').textContent = gameState.userScore;
+            
+            // Update streak indicator
+            const streakEl = document.getElementById('streak');
+            if (gameState.currentStreak >= 3) {
+                streakEl.textContent = `🔥 ${gameState.currentStreak} streak!`;
+                streakEl.style.display = 'inline-block';
+            } else {
+                streakEl.style.display = 'none';
+            }
+        }
+
+        function updateStats() {
+            document.getElementById('totalGames').textContent = gameState.stats.totalGames;
+            document.getElementById('gamesWon').textContent = gameState.stats.gamesWon;
+            document.getElementById('bestStreak').textContent = gameState.stats.bestStreak;
+            
+            const avgScore = gameState.stats.totalGames > 0 ? 
+                Math.round(gameState.stats.totalScore / gameState.stats.totalGames) : 0;
+            document.getElementById('avgScore').textContent = avgScore;
+        }
+
+        function updateTurnIndicator() {
+            const indicator = document.getElementById('turnIndicator');
+            if (!gameState.gameActive) {
+                indicator.className = 'turn-indicator game-over';
+                indicator.textContent = '🎮 Game Over!';
+            } else if (gameState.isUserTurn) {
+                indicator.className = 'turn-indicator user-turn';
+                indicator.textContent = gameState.currentLetter 
+                    ? `🎯 Your Turn - Name a player starting with "${gameState.currentLetter.toUpperCase()}"` 
+                    : '🚀 Your Turn - Name any Football Player!';
+            } else {
+                indicator.className = 'turn-indicator computer-turn';
+                indicator.textContent = '🤖 Computer is thinking...';
+            }
+        }
+
+        function showMessage(text, type) {
+            const message = document.getElementById('message');
+            message.textContent = text;
+            message.className = `message ${type}`;
+            message.style.display = 'block';
+            
+            // Auto-hide non-error messages
+            if (type !== 'error') {
+                setTimeout(() => {
+                    if (message.style.display === 'block') {
+                        message.style.display = 'none';
+                    }
+                }, 4000);
+            }
+        }
+
+        function hideMessage() {
+            document.getElementById('message').style.display = 'none';
+        }
+
+        function addToHistory(player, isUser, responseTime = null) {
+            const historyList = document.getElementById('historyList');
+            const historyItem = document.createElement('div');
+            historyItem.className = 'history-item';
+            
+            const playerSpan = document.createElement('span');
+            playerSpan.className = 'history-player';
+            playerSpan.innerHTML = `<strong>${isUser ? '👤 You' : '🤖 Computer'}:</strong> ${player}`;
+            
+            const timeSpan = document.createElement('span');
+            timeSpan.className = 'history-time';
+            if (responseTime !== null) {
+                timeSpan.textContent = `${responseTime.toFixed(1)}s`;
+            }
+            
+            historyItem.appendChild(playerSpan);
+            historyItem.appendChild(timeSpan);
+            historyList.appendChild(historyItem);
+            historyList.scrollTop = historyList.scrollHeight;
+        }
+
+        function normalizePlayerName(name) {
+            return name.trim().toLowerCase().replace(/[^\w\s]/g, '');
+        }
+
+        function getLastLetter(name) {
+            const normalized = name.replace(/[^\w]/g, '');
+            return normalized.charAt(normalized.length - 1).toLowerCase();
+        }
+
+        function getFirstLetter(name) {
+            const normalized = name.replace(/[^\w]/g, '');
+            return normalized.charAt(0).toLowerCase();
+        }
+
+        function findValidPlayer(startingLetter) {
+            const availablePlayers = footballPlayers.filter(player => 
+                !gameState.usedPlayers.has(normalizePlayerName(player)) &&
+                getFirstLetter(player) === startingLetter.toLowerCase()
+            );
+            
+            if (availablePlayers.length > 0) {
+                const randomIndex = Math.floor(Math.random() * availablePlayers.length);
+                return availablePlayers[randomIndex];
+            }
+            return null;
+        }
+
+        function isValidPlayerName(inputName) {
+            const normalizedInput = normalizePlayerName(inputName);
+            return footballPlayers.some(player => normalizePlayerName(player) === normalizedInput);
+        }
+
+        function getPlayerSuggestions(input) {
+            if (input.length < 2) return [];
+            
+            const filtered = footballPlayers.filter(player => {
+                const normalized = normalizePlayerName(player);
+                const inputNormalized = normalizePlayerName(input);
+                return normalized.includes(inputNormalized) && 
+                       !gameState.usedPlayers.has(normalized);
+            });
+            
+            return filtered.slice(0, 5);
+        }
+
+        function handleInputChange(event) {
+            const input = event.target.value;
+            const suggestions = getPlayerSuggestions(input);
+            const suggestionsEl = document.getElementById('suggestions');
+            
+            if (suggestions.length > 0 && input.length >= 2) {
+                suggestionsEl.innerHTML = '';
+                suggestions.forEach(player => {
+                    const item = document.createElement('div');
+                    item.className = 'suggestion-item';
+                    item.textContent = player;
+                    item.onclick = () => {
+                        document.getElementById('playerInput').value = player;
+                        suggestionsEl.style.display = 'none';
+                    };
+                    suggestionsEl.appendChild(item);
+                });
+                suggestionsEl.style.display = 'block';
+            } else {
+                suggestionsEl.style.display = 'none';
+            }
+        }
+
+        function getHint() {
+            if (!gameState.gameActive || !gameState.isUserTurn) return;
+            
+            gameState.hintsUsed++;
+            const availablePlayers = footballPlayers.filter(player => 
+                !gameState.usedPlayers.has(normalizePlayerName(player)) &&
+                (!gameState.currentLetter || getFirstLetter(player) === gameState.currentLetter.toLowerCase())
+            );
+            
+            if (availablePlayers.length > 0) {
+                const randomPlayer = availablePlayers[Math.floor(Math.random() * availablePlayers.length)];
+                const firstTwoLetters = randomPlayer.substring(0, 2);
+                showMessage(`💡 Hint: Try a player starting with "${firstTwoLetters}..."`, 'hint');
+            } else {
+                showMessage('💡 No hints available - you might be stuck!', 'hint');
+            }
+        }
+
+        function checkAchievements() {
+            const newAchievements = [];
+            
+            // First win
+            if (gameState.stats.gamesWon === 1 && !gameState.achievements.includes('firstWin')) {
+                newAchievements.push('firstWin');
+            }
+            
+            // Streak master
+            if (gameState.currentStreak >= 5 && !gameState.achievements.includes('streakMaster')) {
+                newAchievements.push('streakMaster');
+            }
+            
+            // No hints used
+            if (gameState.hintsUsed === 0 && gameState.userScore >= 5 && !gameState.achievements.includes('noHints')) {
+                newAchievements.push('noHints');
+            }
+            
+            // Long game
+            if (gameState.usedPlayers.size >= 20 && !gameState.achievements.includes('longGame')) {
+                newAchievements.push('longGame');
+            }
+            
+            // Perfect game
+            if (gameState.userScore >= 10 && gameState.hintsUsed === 0 && !gameState.achievements.includes('perfectGame')) {
+                newAchievements.push('perfectGame');
+            }
+            
+            newAchievements.forEach(achievement => {
+                gameState.achievements.push(achievement);
+                showAchievement(achievement);
+            });
+        }
+
+        function showAchievement(achievementKey) {
+            const achievement = achievements[achievementKey];
+            const achievementsEl = document.getElementById('achievements');
+            
+            const achievementEl = document.createElement('div');
+            achievementEl.className = 'achievement';
+            achievementEl.textContent = achievement.name;
+            achievementEl.title = achievement.description;
+            
+            achievementsEl.appendChild(achievementEl);
+            
+            // Create confetti effect
+            createConfetti();
+        }
+
+        function createConfetti() {
+            const colors = ['#667eea', '#764ba2', '#f093fb', '#4CAF50', '#FF9800'];
+            for (let i = 0; i < 20; i++) {
+                setTimeout(() => {
+                    const confetti = document.createElement('div');
+                    confetti.className = 'confetti';
+                    confetti.style.left = Math.random() * 100 + '%';
+                    confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                    confetti.style.animationDelay = Math.random() * 3 + 's';
+                    document.body.appendChild(confetti);
+                    
+                    setTimeout(() => {
+                        confetti.remove();
+                    }, 3000);
+                }, i * 100);
+            }
+        }
+
+        function submitPlayer() {
+            if (!gameState.gameActive || !gameState.isUserTurn) return;
+
+            const input = document.getElementById('playerInput');
+            const playerName = input.value.trim();
+            const responseTime = (Date.now() - gameState.gameStartTime) / 1000;
+
+            if (!playerName) {
+                showMessage('⚠️ Please enter a player name!', 'error');
+                return;
+            }
+
+            // Check if it's a valid football player
+            if (!isValidPlayerName(playerName)) {
+                showMessage('❌ Please enter a valid football player name!', 'error');
+                return;
+            }
+
+            const normalizedName = normalizePlayerName(playerName);
+
+            // Check if player was already used
+            if (gameState.usedPlayers.has(normalizedName)) {
+                showMessage('🔄 This player has already been used!', 'error');
+                gameState.currentStreak = 0;
+                return;
+            }
+
+            // Check if it starts with the correct letter
+            if (gameState.currentLetter && getFirstLetter(playerName) !== gameState.currentLetter.toLowerCase()) {
+                showMessage(`🎯 Player name must start with "${gameState.currentLetter.toUpperCase()}"!`, 'error');
+                gameState.currentStreak = 0;
+                return;
+            }
+
+            // Valid move
+            gameState.usedPlayers.add(normalizedName);
+            gameState.currentLetter = getLastLetter(playerName);
+            gameState.userScore++;
+            gameState.currentStreak++;
+            
+            // Check for speed achievement
+            if (responseTime <= 5 && !gameState.achievements.includes('speedster')) {
+                gameState.achievements.push('speedster');
+                showAchievement('speedster');
+            }
+            
+            addToHistory(playerName, true, responseTime);
+            input.value = '';
+            hideMessage();
+            document.getElementById('suggestions').style.display = 'none';
+
+            // Clear timer if in timed mode
+            if (gameState.timerInterval) {
+                clearInterval(gameState.timerInterval);
+            }
+
+            gameState.isUserTurn = false;
+            updateTurnIndicator();
+            updateGameInfo();
+            checkAchievements();
+
+            // Computer's turn
+            setTimeout(computerTurn, 1500);
+        }
+
+        function computerTurn() {
+            if (!gameState.gameActive) return;
+
+            const computerPlayer = findValidPlayer(gameState.currentLetter);
+            
+            if (!computerPlayer) {
+                // Computer can't find a valid player - user wins!
+                showMessage('🎉 Congratulations! You won! The computer couldn\'t find a valid player.', 'success');
+                gameWon();
+                return;
+            }
+
+            // Computer makes a move
+            gameState.usedPlayers.add(normalizePlayerName(computerPlayer));
+            gameState.currentLetter = getLastLetter(computerPlayer);
+            addToHistory(computerPlayer, false);
+            
+            // Check if user can make a move
+            const userCanMove = footballPlayers.some(player => 
+                !gameState.usedPlayers.has(normalizePlayerName(player)) &&
+                getFirstLetter(player) === gameState.currentLetter.toLowerCase()
+            );
+
+            if (!userCanMove) {
+                showMessage('😔 Game Over! No more valid moves available.', 'error');
+                gameLost();
+                return;
+            }
+
+            gameState.isUserTurn = true;
+            updateTurnIndicator();
+            updateGameInfo();
+            showMessage(`🤖 Computer played: ${computerPlayer}`, 'info');
+            
+            // Restart timer if in timed mode
+            restartTimer();
+            
+            document.getElementById('playerInput').focus();
+        }
+
+        function gameWon() {
+            gameState.gameActive = false;
+            gameState.stats.totalGames++;
+            gameState.stats.gamesWon++;
+            gameState.stats.totalScore += gameState.userScore;
+            gameState.stats.bestStreak = Math.max(gameState.stats.bestStreak, gameState.currentStreak);
+            
+            saveStats();
+            updateTurnIndicator();
+            updateStats();
+            checkAchievements();
+            createConfetti();
+            
+            if (gameState.timerInterval) {
+                clearInterval(gameState.timerInterval);
+            }
+        }
+
+        function gameLost() {
+            gameState.gameActive = false;
+            gameState.stats.totalGames++;
+            gameState.stats.totalScore += gameState.userScore;
+            gameState.stats.bestStreak = Math.max(gameState.stats.bestStreak, gameState.currentStreak);
+            
+            saveStats();
+            updateTurnIndicator();
+            updateStats();
+            
+            if (gameState.timerInterval) {
+                clearInterval(gameState.timerInterval);
+            }
+        }
+
+        function saveStats() {
+            localStorage.setItem('totalGames', gameState.stats.totalGames.toString());
+            localStorage.setItem('gamesWon', gameState.stats.gamesWon.toString());
+            localStorage.setItem('bestStreak', gameState.stats.bestStreak.toString());
+            localStorage.setItem('totalScore', gameState.stats.totalScore.toString());
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                submitPlayer();
+            } else if (event.key === 'Escape') {
+                document.getElementById('suggestions').style.display = 'none';
+            }
+        }
+
+        // Close suggestions when clicking outside
+        document.addEventListener('click', function(event) {
+            const suggestions = document.getElementById('suggestions');
+            const input = document.getElementById('playerInput');
+            if (!suggestions.contains(event.target) && event.target !== input) {
+                suggestions.style.display = 'none';
+            }
+        });
+
+        // Initialize
+        updateStats();
+        document.getElementById('playerInput').focus();
+    </script>
+</body>
+</html>
