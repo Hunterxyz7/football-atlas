@@ -319,6 +319,16 @@
             transform: translateY(-2px);
         }
 
+        .player-input.valid {
+            border-color: #4CAF50;
+            box-shadow: 0 0 20px rgba(76, 175, 80, 0.2);
+        }
+
+        .player-input.invalid {
+            border-color: #F44336;
+            box-shadow: 0 0 20px rgba(244, 67, 54, 0.2);
+        }
+
         .suggestions {
             position: absolute;
             top: 100%;
@@ -327,20 +337,42 @@
             background: white;
             border: 1px solid #ddd;
             border-radius: 10px;
-            max-height: 200px;
+            max-height: 250px;
             overflow-y: auto;
             z-index: 1000;
             display: none;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
         }
 
         .suggestion-item {
-            padding: 10px 15px;
+            padding: 12px 15px;
             cursor: pointer;
             transition: background 0.2s;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .suggestion-item:last-child {
+            border-bottom: none;
         }
 
         .suggestion-item:hover {
             background: rgba(102, 126, 234, 0.1);
+        }
+
+        .suggestion-item.highlighted {
+            background: rgba(102, 126, 234, 0.15);
+        }
+
+        .suggestion-name {
+            font-weight: bold;
+        }
+
+        .suggestion-alias {
+            color: #666;
+            font-size: 0.9rem;
         }
 
         .button-group {
@@ -489,6 +521,12 @@
             font-weight: bold;
         }
 
+        .history-name {
+            color: #667eea;
+            font-size: 0.9rem;
+            margin-left: 5px;
+        }
+
         .history-time {
             font-size: 0.9rem;
             color: #666;
@@ -554,6 +592,14 @@
             font-size: 0.8rem;
             color: #666;
             text-transform: uppercase;
+        }
+
+        .input-helper {
+            font-size: 0.9rem;
+            color: #666;
+            margin-top: 5px;
+            text-align: left;
+            padding: 0 5px;
         }
 
         @media (max-width: 768px) {
@@ -625,6 +671,7 @@
                     <li>Name a football player to start the chain</li>
                     <li>Each player must start with the last letter of the previous name</li>
                     <li>No player can be repeated during the game</li>
+                    <li>Use full names, nicknames, or common aliases</li>
                     <li>Beat the computer by finding names they can't match</li>
                     <li>Earn achievements and track your best streaks!</li>
                 </ul>
@@ -663,7 +710,8 @@
 
             <div class="game-area">
                 <div class="input-area">
-                    <input type="text" id="playerInput" class="player-input" placeholder="Enter football player name..." onkeypress="handleKeyPress(event)" oninput="handleInputChange(event)" autocomplete="off">
+                    <input type="text" id="playerInput" class="player-input" placeholder="Enter football player name (e.g., Messi, Ronaldo, Neymar Jr)..." onkeydown="handleKeyPress(event)" oninput="handleInputChange(event)" autocomplete="off">
+                    <div class="input-helper">💡 You can use nicknames, short names, or aliases (e.g., "Messi" instead of "Lionel Messi")</div>
                     <div id="suggestions" class="suggestions"></div>
                     
                     <div class="button-group">
@@ -709,43 +757,195 @@
     </div>
 
     <script>
-        // Enhanced football players database with more players
-        const footballPlayers = [
-            "Lionel Messi", "Cristiano Ronaldo", "Neymar Jr", "Kylian Mbappe", "Erling Haaland",
-            "Kevin De Bruyne", "Virgil van Dijk", "Mohamed Salah", "Harry Kane", "Sadio Mane",
-            "Robert Lewandowski", "Luka Modric", "Toni Kroos", "Sergio Ramos", "Gerard Pique",
-            "Karim Benzema", "Antoine Griezmann", "Paul Pogba", "N'Golo Kante", "Raheem Sterling",
-            "Jadon Sancho", "Jack Grealish", "Phil Foden", "Mason Mount", "Declan Rice",
-            "Bruno Fernandes", "Marcus Rashford", "Jamal Musiala", "Pedri", "Gavi",
-            "Ansu Fati", "Vinicius Junior", "Eduardo Camavinga", "Jude Bellingham", "Bukayo Saka",
-            "Emile Smith Rowe", "Mason Greenwood", "Kai Havertz", "Timo Werner", "Christian Pulisic",
-            "Romelu Lukaku", "Lautaro Martinez", "Nicolo Barella", "Federico Chiesa", "Lorenzo Insigne",
-            "Ciro Immobile", "Andrea Belotti", "Dusan Vlahovic", "Alvaro Morata", "Ferran Torres",
-            "Sergio Busquets", "Jordi Alba", "Marc-Andre ter Stegen", "Alisson Becker", "Ederson",
-            "Thibaut Courtois", "Jan Oblak", "Manuel Neuer", "Joshua Kimmich", "Leon Goretzka",
-            "Serge Gnabry", "Leroy Sane", "Thomas Muller", "Marco Reus", "Mats Hummels",
-            "Antonio Rudiger", "Florian Wirtz", "Youssoufa Moukoko", "Giovanni Reyna", "Tyler Adams",
-            "Weston McKennie", "Yunus Musah", "Ricardo Pepi", "Folarin Balogun", "Tammy Abraham",
-            "Fikayo Tomori", "Reece James", "Ben Chilwell", "Thiago Silva", "Cesar Azpilicueta",
-            "Mateo Kovacic", "Jorginho", "Achraf Hakimi", "Marquinhos", "Presnel Kimpembe",
-            "Marco Verratti", "Vitinha", "Ousmane Dembele", "Kingsley Coman", "Christopher Nkunku",
-            "Dayot Upamecano", "Jules Kounde", "William Saliba", "Gabriel Martinelli", "Martin Odegaard",
-            "Thomas Partey", "Granit Xhaka", "Alexandre Lacazette", "Pierre-Emerick Aubameyang", "Olivier Giroud",
-            "Theo Hernandez", "Mike Maignan", "Rafael Leao", "Ismael Bennacer", "Sandro Tonali",
-            "Davide Calabria", "Alessandro Bastoni", "Nicolo Zaniolo", "Gianluca Scamacca", "Wilfried Gnonto",
-            "Destiny Udogie", "Zlatan Ibrahimovic", "Andres Iniesta", "Xavi Hernandez", "David Villa",
-            "Fernando Torres", "Sergio Aguero", "David Silva", "Yaya Toure", "Vincent Kompany",
-            "Eden Hazard", "Gareth Bale", "Luis Suarez", "Diego Forlan", "Carlos Tevez",
-            "Angel Di Maria", "Gonzalo Higuain", "Paulo Dybala", "Mauro Icardi", "Edin Dzeko",
-            "Ivan Perisic", "Luka Jovic", "Aleksandar Mitrovic", "Nikola Vlasic", "Mateo Kovacic",
-            "Ivan Rakitic", "Marcelo Brozovic", "Milan Skriniar", "Stefan de Vrij", "Alessandro Florenzi",
-            "Federico Bernardeschi", "Domenico Berardi", "Giacomo Raspadori", "Matteo Politano", "Victor Osimhen",
-            "Khvicha Kvaratskhelia", "Piotr Zielinski", "Fabian Ruiz", "Stanislav Lobotka", "Giovanni Di Lorenzo",
-            "Kalidou Koulibaly", "Amir Rrahmani", "Alex Meret", "Hirving Lozano", "Dries Mertens",
-            "Jose Callejon", "Marek Hamsik", "Fabio Quagliarella", "Francesco Totti", "Daniele De Rossi",
-            "Gianluigi Buffon", "Franco Baresi", "Paolo Maldini", "Roberto Baggio", "Alessandro Del Piero",
-            "Francesco Totti", "Gennaro Gattuso", "Andrea Pirlo", "Fabio Cannavaro", "Gianluca Vialli"
+        // Enhanced football players database with aliases and nicknames
+        const footballPlayersData = [
+            { name: "Lionel Messi", aliases: ["Messi", "Leo Messi", "Leo", "La Pulga", "GOAT"] },
+            { name: "Cristiano Ronaldo", aliases: ["Ronaldo", "CR7", "Cristiano", "CR", "Siuu"] },
+            { name: "Neymar Jr", aliases: ["Neymar", "Ney", "Neymar Junior", "Menino Ney"] },
+            { name: "Kylian Mbappe", aliases: ["Mbappe", "Kylian", "Donatello", "Turtle"] },
+            { name: "Erling Haaland", aliases: ["Haaland", "Erling", "The Machine", "Norwegian Messi"] },
+            { name: "Kevin De Bruyne", aliases: ["KDB", "De Bruyne", "Kevin", "Ginger Prince"] },
+            { name: "Virgil van Dijk", aliases: ["Van Dijk", "Virgil", "VVD", "Colossus"] },
+            { name: "Mohamed Salah", aliases: ["Salah", "Mo Salah", "Egyptian King", "Pharaoh"] },
+            { name: "Harry Kane", aliases: ["Kane", "Harry", "Hurricane"] },
+            { name: "Sadio Mane", aliases: ["Mane", "Sadio", "The Beat"] },
+            { name: "Robert Lewandowski", aliases: ["Lewandowski", "Lewy", "Robert", "RL9"] },
+            { name: "Luka Modric", aliases: ["Modric", "Luka", "Magic", "Little Mozart"] },
+            { name: "Toni Kroos", aliases: ["Kroos", "Toni", "The Professor"] },
+            { name: "Sergio Ramos", aliases: ["Ramos", "Sergio", "SR4", "Captain"] },
+            { name: "Gerard Pique", aliases: ["Pique", "Gerard", "Geri"] },
+            { name: "Karim Benzema", aliases: ["Benzema", "Karim", "Big Benz", "KB9"] },
+            { name: "Antoine Griezmann", aliases: ["Griezmann", "Antoine", "Grizi", "Little Prince"] },
+            { name: "Paul Pogba", aliases: ["Pogba", "Paul", "PP6", "Pogboom"] },
+            { name: "N'Golo Kante", aliases: ["Kante", "Ngolo", "The Destroyer", "Kanté"] },
+            { name: "Raheem Sterling", aliases: ["Sterling", "Raheem", "Raz"] },
+            { name: "Jadon Sancho", aliases: ["Sancho", "Jadon"] },
+            { name: "Jack Grealish", aliases: ["Grealish", "Jack", "Super Jack"] },
+            { name: "Phil Foden", aliases: ["Foden", "Phil", "Stockport Iniesta"] },
+            { name: "Mason Mount", aliases: ["Mount", "Mason", "Mase"] },
+            { name: "Declan Rice", aliases: ["Rice", "Declan", "Dec"] },
+            { name: "Bruno Fernandes", aliases: ["Bruno", "Fernandes", "BF8", "Penandes"] },
+            { name: "Marcus Rashford", aliases: ["Rashford", "Marcus", "Rashy", "Beans"] },
+            { name: "Jamal Musiala", aliases: ["Musiala", "Jamal"] },
+            { name: "Pedri", aliases: ["Pedro González", "Pedro", "Pedrito"] },
+            { name: "Gavi", aliases: ["Pablo Páez Gavira", "Pablo Gavira"] },
+            { name: "Ansu Fati", aliases: ["Fati", "Ansu"] },
+            { name: "Vinicius Junior", aliases: ["Vinicius", "Vini Jr", "Vini", "Vinicus"] },
+            { name: "Eduardo Camavinga", aliases: ["Camavinga", "Eduardo", "Cama"] },
+            { name: "Jude Bellingham", aliases: ["Bellingham", "Jude", "Jude Bingham"] },
+            { name: "Bukayo Saka", aliases: ["Saka", "Bukayo", "Starboy"] },
+            { name: "Emile Smith Rowe", aliases: ["Smith Rowe", "Emile", "ESR"] },
+            { name: "Mason Greenwood", aliases: ["Greenwood", "Mason"] },
+            { name: "Kai Havertz", aliases: ["Havertz", "Kai"] },
+            { name: "Timo Werner", aliases: ["Werner", "Timo", "Turbo Timo"] },
+            { name: "Christian Pulisic", aliases: ["Pulisic", "Christian", "Captain America", "Puli"] },
+            { name: "Romelu Lukaku", aliases: ["Lukaku", "Romelu", "Big Rom", "Rom"] },
+            { name: "Lautaro Martinez", aliases: ["Lautaro", "Martinez", "El Toro"] },
+            { name: "Nicolo Barella", aliases: ["Barella", "Nicolo", "Nicolò"] },
+            { name: "Federico Chiesa", aliases: ["Chiesa", "Federico", "Fede"] },
+            { name: "Lorenzo Insigne", aliases: ["Insigne", "Lorenzo", "Magnificent"] },
+            { name: "Ciro Immobile", aliases: ["Immobile", "Ciro"] },
+            { name: "Andrea Belotti", aliases: ["Belotti", "Andrea", "Il Gallo"] },
+            { name: "Dusan Vlahovic", aliases: ["Vlahovic", "Dusan", "DV7"] },
+            { name: "Alvaro Morata", aliases: ["Morata", "Alvaro"] },
+            { name: "Ferran Torres", aliases: ["Torres", "Ferran", "The Shark"] },
+            { name: "Sergio Busquets", aliases: ["Busquets", "Sergio", "Busi", "The Octopus"] },
+            { name: "Jordi Alba", aliases: ["Alba", "Jordi"] },
+            { name: "Marc-Andre ter Stegen", aliases: ["ter Stegen", "Marc-Andre", "MATS", "Ter Stegen"] },
+            { name: "Alisson Becker", aliases: ["Alisson", "Becker", "Ali"] },
+            { name: "Ederson", aliases: ["Ederson Moraes", "Eddie"] },
+            { name: "Thibaut Courtois", aliases: ["Courtois", "Thibaut", "TBO"] },
+            { name: "Jan Oblak", aliases: ["Oblak", "Jan"] },
+            { name: "Manuel Neuer", aliases: ["Neuer", "Manuel", "Manu"] },
+            { name: "Joshua Kimmich", aliases: ["Kimmich", "Joshua", "Josh"] },
+            { name: "Leon Goretzka", aliases: ["Goretzka", "Leon"] },
+            { name: "Serge Gnabry", aliases: ["Gnabry", "Serge"] },
+            { name: "Leroy Sane", aliases: ["Sane", "Leroy", "Sané"] },
+            { name: "Thomas Muller", aliases: ["Muller", "Thomas", "Müller", "Space Interpreter"] },
+            { name: "Marco Reus", aliases: ["Reus", "Marco", "Captain"] },
+            { name: "Mats Hummels", aliases: ["Hummels", "Mats"] },
+            { name: "Antonio Rudiger", aliases: ["Rudiger", "Antonio", "Rüdiger"] },
+            { name: "Florian Wirtz", aliases: ["Wirtz", "Florian"] },
+            { name: "Youssoufa Moukoko", aliases: ["Moukoko", "Youssoufa"] },
+            { name: "Giovanni Reyna", aliases: ["Reyna", "Giovanni", "Gio"] },
+            { name: "Tyler Adams", aliases: ["Adams", "Tyler"] },
+            { name: "Weston McKennie", aliases: ["McKennie", "Weston"] },
+            { name: "Yunus Musah", aliases: ["Musah", "Yunus"] },
+            { name: "Ricardo Pepi", aliases: ["Pepi", "Ricardo"] },
+            { name: "Folarin Balogun", aliases: ["Balogun", "Folarin"] },
+            { name: "Tammy Abraham", aliases: ["Abraham", "Tammy", "Tammy A"] },
+            { name: "Fikayo Tomori", aliases: ["Tomori", "Fikayo", "Fik"] },
+            { name: "Reece James", aliases: ["James", "Reece"] },
+            { name: "Ben Chilwell", aliases: ["Chilwell", "Ben", "Chilly"] },
+            { name: "Thiago Silva", aliases: ["Silva", "Thiago", "The Monster"] },
+            { name: "Cesar Azpilicueta", aliases: ["Azpilicueta", "Cesar", "Dave", "Azpi"] },
+            { name: "Mateo Kovacic", aliases: ["Kovacic", "Mateo", "Kova"] },
+            { name: "Jorginho", aliases: ["Jorge Luiz Frello", "Jorge"] },
+            { name: "Achraf Hakimi", aliases: ["Hakimi", "Achraf"] },
+            { name: "Marquinhos", aliases: ["Marcos Aoás Corrêa"] },
+            { name: "Presnel Kimpembe", aliases: ["Kimpembe", "Presnel"] },
+            { name: "Marco Verratti", aliases: ["Verratti", "Marco", "Little Owl"] },
+            { name: "Vitinha", aliases: ["Vítor Ferreira"] },
+            { name: "Ousmane Dembele", aliases: ["Dembele", "Ousmane", "Dembouz"] },
+            { name: "Kingsley Coman", aliases: ["Coman", "Kingsley", "King"] },
+            { name: "Christopher Nkunku", aliases: ["Nkunku", "Christopher"] },
+            { name: "Dayot Upamecano", aliases: ["Upamecano", "Dayot", "Upa"] },
+            { name: "Jules Kounde", aliases: ["Kounde", "Jules", "Koundé"] },
+            { name: "William Saliba", aliases: ["Saliba", "William", "Willy"] },
+            { name: "Gabriel Martinelli", aliases: ["Martinelli", "Gabriel", "Gabi"] },
+            { name: "Martin Odegaard", aliases: ["Odegaard", "Martin", "Ødegaard", "Captain"] },
+            { name: "Thomas Partey", aliases: ["Partey", "Thomas", "The Octopus"] },
+            { name: "Granit Xhaka", aliases: ["Xhaka", "Granit"] },
+            { name: "Alexandre Lacazette", aliases: ["Lacazette", "Alexandre", "Laca"] },
+            { name: "Pierre-Emerick Aubameyang", aliases: ["Aubameyang", "Pierre-Emerick", "Auba", "PEA"] },
+            { name: "Olivier Giroud", aliases: ["Giroud", "Olivier", "OG", "Sexy Man"] },
+            { name: "Theo Hernandez", aliases: ["Hernandez", "Theo", "Théo"] },
+            { name: "Mike Maignan", aliases: ["Maignan", "Mike", "Magic Mike"] },
+            { name: "Rafael Leao", aliases: ["Leao", "Rafael", "Rafa", "Leão"] },
+            { name: "Ismael Bennacer", aliases: ["Bennacer", "Ismael"] },
+            { name: "Sandro Tonali", aliases: ["Tonali", "Sandro"] },
+            { name: "Davide Calabria", aliases: ["Calabria", "Davide"] },
+            { name: "Alessandro Bastoni", aliases: ["Bastoni", "Alessandro"] },
+            { name: "Nicolo Zaniolo", aliases: ["Zaniolo", "Nicolo", "Nicolò"] },
+            { name: "Gianluca Scamacca", aliases: ["Scamacca", "Gianluca"] },
+            { name: "Wilfried Gnonto", aliases: ["Gnonto", "Wilfried", "Willy"] },
+            { name: "Destiny Udogie", aliases: ["Udogie", "Destiny"] },
+            { name: "Zlatan Ibrahimovic", aliases: ["Ibrahimovic", "Zlatan", "Ibra", "Lion", "God"] },
+            { name: "Andres Iniesta", aliases: ["Iniesta", "Andres", "Andrés", "Don Andres", "Magician"] },
+            { name: "Xavi Hernandez", aliases: ["Xavi", "Hernandez", "Xavier Hernández", "The Architect"] },
+            { name: "David Villa", aliases: ["Villa", "David", "El Guaje"] },
+            { name: "Fernando Torres", aliases: ["Torres", "Fernando", "El Niño"] },
+            { name: "Sergio Aguero", aliases: ["Aguero", "Sergio", "Kun Aguero", "Kun", "Agüero"] },
+            { name: "David Silva", aliases: ["Silva", "David", "El Mago", "Merlin"] },
+            { name: "Yaya Toure", aliases: ["Toure", "Yaya", "Touré"] },
+            { name: "Vincent Kompany", aliases: ["Kompany", "Vincent", "Vinny", "VK4"] },
+            { name: "Eden Hazard", aliases: ["Hazard", "Eden", "The Magician"] },
+            { name: "Gareth Bale", aliases: ["Bale", "Gareth", "The Welsh Dragon"] },
+            { name: "Luis Suarez", aliases: ["Suarez", "Luis", "El Pistolero", "Suárez"] },
+            { name: "Diego Forlan", aliases: ["Forlan", "Diego", "Forlán"] },
+            { name: "Carlos Tevez", aliases: ["Tevez", "Carlos", "Apache"] },
+            { name: "Angel Di Maria", aliases: ["Di Maria", "Angel", "Ángel Di María", "Fideo"] },
+            { name: "Gonzalo Higuain", aliases: ["Higuain", "Gonzalo", "Pipita", "Higuaín"] },
+            { name: "Paulo Dybala", aliases: ["Dybala", "Paulo", "La Joya"] },
+            { name: "Mauro Icardi", aliases: ["Icardi", "Mauro"] },
+            { name: "Edin Dzeko", aliases: ["Dzeko", "Edin", "Diamond"] },
+            { name: "Ivan Perisic", aliases: ["Perisic", "Ivan", "Perišić"] },
+            { name: "Luka Jovic", aliases: ["Jovic", "Luka", "Jović"] },
+            { name: "Aleksandar Mitrovic", aliases: ["Mitrovic", "Aleksandar", "Mitrović", "Mitro"] },
+            { name: "Nikola Vlasic", aliases: ["Vlasic", "Nikola", "Vlašić"] },
+            { name: "Ivan Rakitic", aliases: ["Rakitic", "Ivan", "Rakitić"] },
+            { name: "Marcelo Brozovic", aliases: ["Brozovic", "Marcelo", "Brozović", "Epic Brozo"] },
+            { name: "Milan Skriniar", aliases: ["Skriniar", "Milan", "Škriniar"] },
+            { name: "Stefan de Vrij", aliases: ["de Vrij", "Stefan"] },
+            { name: "Alessandro Florenzi", aliases: ["Florenzi", "Alessandro"] },
+            { name: "Federico Bernardeschi", aliases: ["Bernardeschi", "Federico", "Berna"] },
+            { name: "Domenico Berardi", aliases: ["Berardi", "Domenico"] },
+            { name: "Giacomo Raspadori", aliases: ["Raspadori", "Giacomo", "Jack"] },
+            { name: "Matteo Politano", aliases: ["Politano", "Matteo"] },
+            { name: "Victor Osimhen", aliases: ["Osimhen", "Victor"] },
+            { name: "Khvicha Kvaratskhelia", aliases: ["Kvaratskhelia", "Khvicha", "Kvara"] },
+            { name: "Piotr Zielinski", aliases: ["Zielinski", "Piotr", "Zieliński"] },
+            { name: "Fabian Ruiz", aliases: ["Ruiz", "Fabian", "Fabián"] },
+            { name: "Stanislav Lobotka", aliases: ["Lobotka", "Stanislav"] },
+            { name: "Giovanni Di Lorenzo", aliases: ["Di Lorenzo", "Giovanni"] },
+            { name: "Kalidou Koulibaly", aliases: ["Koulibaly", "Kalidou", "K2"] },
+            { name: "Amir Rrahmani", aliases: ["Rrahmani", "Amir"] },
+            { name: "Alex Meret", aliases: ["Meret", "Alex"] },
+            { name: "Hirving Lozano", aliases: ["Lozano", "Hirving", "Chucky"] },
+            { name: "Dries Mertens", aliases: ["Mertens", "Dries", "Ciro"] },
+            { name: "Jose Callejon", aliases: ["Callejon", "Jose", "José Callejón"] },
+            { name: "Marek Hamsik", aliases: ["Hamsik", "Marek", "Hamšík"] },
+            { name: "Fabio Quagliarella", aliases: ["Quagliarella", "Fabio"] },
+            { name: "Francesco Totti", aliases: ["Totti", "Francesco", "Il Capitano", "The Golden Boy"] },
+            { name: "Daniele De Rossi", aliases: ["De Rossi", "Daniele"] },
+            { name: "Gianluigi Buffon", aliases: ["Buffon", "Gianluigi", "Gigi"] },
+            { name: "Franco Baresi", aliases: ["Baresi", "Franco"] },
+            { name: "Paolo Maldini", aliases: ["Maldini", "Paolo"] },
+            { name: "Roberto Baggio", aliases: ["Baggio", "Roberto", "Il Divin Codino"] },
+            { name: "Alessandro Del Piero", aliases: ["Del Piero", "Alessandro", "Pinturicchio"] },
+            { name: "Gennaro Gattuso", aliases: ["Gattuso", "Gennaro", "Rino"] },
+            { name: "Andrea Pirlo", aliases: ["Pirlo", "Andrea", "The Architect", "Maestro"] },
+            { name: "Fabio Cannavaro", aliases: ["Cannavaro", "Fabio"] },
+            { name: "Gianluca Vialli", aliases: ["Vialli", "Gianluca"] }
         ];
+
+        // Create searchable index for faster lookups
+        const playersIndex = new Map();
+        const aliasToPlayer = new Map();
+
+        // Initialize the search index
+        function initializePlayersIndex() {
+            footballPlayersData.forEach(playerData => {
+                const normalizedName = normalizePlayerName(playerData.name);
+                playersIndex.set(normalizedName, playerData);
+                
+                // Map each alias to the main player
+                playerData.aliases.forEach(alias => {
+                    const normalizedAlias = normalizePlayerName(alias);
+                    aliasToPlayer.set(normalizedAlias, playerData);
+                });
+            });
+        }
 
         // Game state with enhanced features
         let gameState = {
@@ -762,6 +962,7 @@
             hintsUsed: 0,
             gameStartTime: 0,
             achievements: [],
+            selectedSuggestionIndex: -1,
             stats: {
                 totalGames: parseInt(localStorage.getItem('totalGames') || '0'),
                 gamesWon: parseInt(localStorage.getItem('gamesWon') || '0'),
@@ -869,10 +1070,12 @@
                 currentStreak: 0,
                 hintsUsed: 0,
                 gameStartTime: Date.now(),
-                achievements: []
+                achievements: [],
+                selectedSuggestionIndex: -1
             };
             
             document.getElementById('playerInput').value = '';
+            document.getElementById('playerInput').className = 'player-input';
             document.getElementById('historyList').innerHTML = '';
             document.getElementById('achievements').innerHTML = '';
             document.getElementById('timer').style.display = 'none';
@@ -959,14 +1162,19 @@
             document.getElementById('message').style.display = 'none';
         }
 
-        function addToHistory(player, isUser, responseTime = null) {
+        function addToHistory(player, isUser, responseTime = null, displayName = null) {
             const historyList = document.getElementById('historyList');
             const historyItem = document.createElement('div');
             historyItem.className = 'history-item';
             
             const playerSpan = document.createElement('span');
             playerSpan.className = 'history-player';
-            playerSpan.innerHTML = `<strong>${isUser ? '👤 You' : '🤖 Computer'}:</strong> ${player}`;
+            
+            const playerText = `<strong>${isUser ? '👤 You' : '🤖 Computer'}:</strong> `;
+            const nameText = displayName && displayName !== player ? 
+                `${displayName} <span class="history-name">(${player})</span>` : player;
+            
+            playerSpan.innerHTML = playerText + nameText;
             
             const timeSpan = document.createElement('span');
             timeSpan.className = 'history-time';
@@ -981,7 +1189,7 @@
         }
 
         function normalizePlayerName(name) {
-            return name.trim().toLowerCase().replace(/[^\w\s]/g, '');
+            return name.trim().toLowerCase().replace(/[^\w\s]/g, '').replace(/\s+/g, ' ');
         }
 
         function getLastLetter(name) {
@@ -994,10 +1202,39 @@
             return normalized.charAt(0).toLowerCase();
         }
 
+        function findPlayerByNameOrAlias(inputName) {
+            const normalizedInput = normalizePlayerName(inputName);
+            
+            // First try exact match with main names
+            if (playersIndex.has(normalizedInput)) {
+                return playersIndex.get(normalizedInput);
+            }
+            
+            // Then try exact match with aliases
+            if (aliasToPlayer.has(normalizedInput)) {
+                return aliasToPlayer.get(normalizedInput);
+            }
+            
+            // Finally try partial matches
+            for (const [key, playerData] of playersIndex.entries()) {
+                if (key.includes(normalizedInput) || normalizedInput.includes(key)) {
+                    return playerData;
+                }
+            }
+            
+            for (const [key, playerData] of aliasToPlayer.entries()) {
+                if (key.includes(normalizedInput) || normalizedInput.includes(key)) {
+                    return playerData;
+                }
+            }
+            
+            return null;
+        }
+
         function findValidPlayer(startingLetter) {
-            const availablePlayers = footballPlayers.filter(player => 
-                !gameState.usedPlayers.has(normalizePlayerName(player)) &&
-                getFirstLetter(player) === startingLetter.toLowerCase()
+            const availablePlayers = footballPlayersData.filter(playerData => 
+                !gameState.usedPlayers.has(normalizePlayerName(playerData.name)) &&
+                getFirstLetter(playerData.name) === startingLetter.toLowerCase()
             );
             
             if (availablePlayers.length > 0) {
@@ -1007,39 +1244,135 @@
             return null;
         }
 
-        function isValidPlayerName(inputName) {
-            const normalizedInput = normalizePlayerName(inputName);
-            return footballPlayers.some(player => normalizePlayerName(player) === normalizedInput);
-        }
-
         function getPlayerSuggestions(input) {
             if (input.length < 2) return [];
             
-            const filtered = footballPlayers.filter(player => {
-                const normalized = normalizePlayerName(player);
-                const inputNormalized = normalizePlayerName(input);
-                return normalized.includes(inputNormalized) && 
-                       !gameState.usedPlayers.has(normalized);
+            const normalizedInput = normalizePlayerName(input);
+            const suggestions = [];
+            const seen = new Set();
+            
+            // Search through main names and aliases
+            footballPlayersData.forEach(playerData => {
+                if (gameState.usedPlayers.has(normalizePlayerName(playerData.name))) {
+                    return; // Skip already used players
+                }
+                
+                const mainNameNormalized = normalizePlayerName(playerData.name);
+                let matchFound = false;
+                let matchedAlias = null;
+                
+                // Check main name
+                if (mainNameNormalized.includes(normalizedInput)) {
+                    matchFound = true;
+                }
+                
+                // Check aliases
+                if (!matchFound) {
+                    for (const alias of playerData.aliases) {
+                        const aliasNormalized = normalizePlayerName(alias);
+                        if (aliasNormalized.includes(normalizedInput)) {
+                            matchFound = true;
+                            matchedAlias = alias;
+                            break;
+                        }
+                    }
+                }
+                
+                // If letter constraint exists, check it
+                if (matchFound && gameState.currentLetter) {
+                    const firstLetter = getFirstLetter(playerData.name);
+                    if (firstLetter !== gameState.currentLetter.toLowerCase()) {
+                        return; // Skip if doesn't match current letter
+                    }
+                }
+                
+                if (matchFound && !seen.has(playerData.name)) {
+                    suggestions.push({
+                        name: playerData.name,
+                        displayAlias: matchedAlias,
+                        aliases: playerData.aliases
+                    });
+                    seen.add(playerData.name);
+                }
             });
             
-            return filtered.slice(0, 5);
+            // Sort by relevance (exact matches first, then partial matches)
+            suggestions.sort((a, b) => {
+                const aMatch = (a.displayAlias || a.name).toLowerCase();
+                const bMatch = (b.displayAlias || b.name).toLowerCase();
+                const input = normalizedInput;
+                
+                // Exact matches first
+                if (aMatch === input && bMatch !== input) return -1;
+                if (bMatch === input && aMatch !== input) return 1;
+                
+                // Starts with input
+                if (aMatch.startsWith(input) && !bMatch.startsWith(input)) return -1;
+                if (bMatch.startsWith(input) && !aMatch.startsWith(input)) return 1;
+                
+                // Shorter names first (more likely to be what user wants)
+                return aMatch.length - bMatch.length;
+            });
+            
+            return suggestions.slice(0, 6);
         }
 
         function handleInputChange(event) {
             const input = event.target.value;
+            const inputElement = event.target;
             const suggestions = getPlayerSuggestions(input);
             const suggestionsEl = document.getElementById('suggestions');
             
+            gameState.selectedSuggestionIndex = -1;
+            
+            // Update input styling based on validity
+            if (input.length >= 2) {
+                const playerData = findPlayerByNameOrAlias(input);
+                if (playerData) {
+                    // Check if valid for current game state
+                    const isUsed = gameState.usedPlayers.has(normalizePlayerName(playerData.name));
+                    const letterValid = !gameState.currentLetter || 
+                        getFirstLetter(playerData.name) === gameState.currentLetter.toLowerCase();
+                    
+                    if (!isUsed && letterValid) {
+                        inputElement.className = 'player-input valid';
+                    } else {
+                        inputElement.className = 'player-input invalid';
+                    }
+                } else {
+                    inputElement.className = 'player-input invalid';
+                }
+            } else {
+                inputElement.className = 'player-input';
+            }
+            
+            // Show suggestions
             if (suggestions.length > 0 && input.length >= 2) {
                 suggestionsEl.innerHTML = '';
-                suggestions.forEach(player => {
+                suggestions.forEach((suggestion, index) => {
                     const item = document.createElement('div');
                     item.className = 'suggestion-item';
-                    item.textContent = player;
-                    item.onclick = () => {
-                        document.getElementById('playerInput').value = player;
-                        suggestionsEl.style.display = 'none';
-                    };
+                    item.dataset.index = index;
+                    
+                    const nameSpan = document.createElement('span');
+                    nameSpan.className = 'suggestion-name';
+                    nameSpan.textContent = suggestion.name;
+                    
+                    const aliasSpan = document.createElement('span');
+                    aliasSpan.className = 'suggestion-alias';
+                    
+                    if (suggestion.displayAlias && suggestion.displayAlias !== suggestion.name) {
+                        aliasSpan.textContent = `aka ${suggestion.displayAlias}`;
+                    } else if (suggestion.aliases.length > 0) {
+                        aliasSpan.textContent = `aka ${suggestion.aliases[0]}`;
+                    }
+                    
+                    item.appendChild(nameSpan);
+                    if (aliasSpan.textContent) {
+                        item.appendChild(aliasSpan);
+                    }
+                    
+                    item.onclick = () => selectSuggestion(suggestion.name);
                     suggestionsEl.appendChild(item);
                 });
                 suggestionsEl.style.display = 'block';
@@ -1048,19 +1381,35 @@
             }
         }
 
+        function selectSuggestion(playerName) {
+            document.getElementById('playerInput').value = playerName;
+            document.getElementById('playerInput').className = 'player-input valid';
+            document.getElementById('suggestions').style.display = 'none';
+            gameState.selectedSuggestionIndex = -1;
+        }
+
         function getHint() {
             if (!gameState.gameActive || !gameState.isUserTurn) return;
             
             gameState.hintsUsed++;
-            const availablePlayers = footballPlayers.filter(player => 
-                !gameState.usedPlayers.has(normalizePlayerName(player)) &&
-                (!gameState.currentLetter || getFirstLetter(player) === gameState.currentLetter.toLowerCase())
+            
+            // Find available players for current letter
+            const availablePlayers = footballPlayersData.filter(playerData => 
+                !gameState.usedPlayers.has(normalizePlayerName(playerData.name)) &&
+                (!gameState.currentLetter || getFirstLetter(playerData.name) === gameState.currentLetter.toLowerCase())
             );
             
             if (availablePlayers.length > 0) {
                 const randomPlayer = availablePlayers[Math.floor(Math.random() * availablePlayers.length)];
-                const firstTwoLetters = randomPlayer.substring(0, 2);
-                showMessage(`💡 Hint: Try a player starting with "${firstTwoLetters}..."`, 'hint');
+                const firstTwoLetters = randomPlayer.name.substring(0, 2);
+                const commonAlias = randomPlayer.aliases.length > 0 ? randomPlayer.aliases[0] : null;
+                
+                let hintText = `💡 Hint: Try a player starting with "${firstTwoLetters}..."`;
+                if (commonAlias && commonAlias.length < randomPlayer.name.length) {
+                    hintText += ` Maybe someone known as "${commonAlias.substring(0, Math.min(3, commonAlias.length))}..."`;
+                }
+                
+                showMessage(hintText, 'hint');
             } else {
                 showMessage('💡 No hints available - you might be stuck!', 'hint');
             }
@@ -1137,21 +1486,25 @@
             if (!gameState.gameActive || !gameState.isUserTurn) return;
 
             const input = document.getElementById('playerInput');
-            const playerName = input.value.trim();
+            const inputName = input.value.trim();
             const responseTime = (Date.now() - gameState.gameStartTime) / 1000;
 
-            if (!playerName) {
+            if (!inputName) {
                 showMessage('⚠️ Please enter a player name!', 'error');
                 return;
             }
 
-            // Check if it's a valid football player
-            if (!isValidPlayerName(playerName)) {
-                showMessage('❌ Please enter a valid football player name!', 'error');
+            // Find player by name or alias
+            const playerData = findPlayerByNameOrAlias(inputName);
+            
+            if (!playerData) {
+                showMessage('❌ Please enter a valid football player name! Try using nicknames or full names.', 'error');
+                gameState.currentStreak = 0;
                 return;
             }
 
-            const normalizedName = normalizePlayerName(playerName);
+            const mainPlayerName = playerData.name;
+            const normalizedName = normalizePlayerName(mainPlayerName);
 
             // Check if player was already used
             if (gameState.usedPlayers.has(normalizedName)) {
@@ -1161,7 +1514,7 @@
             }
 
             // Check if it starts with the correct letter
-            if (gameState.currentLetter && getFirstLetter(playerName) !== gameState.currentLetter.toLowerCase()) {
+            if (gameState.currentLetter && getFirstLetter(mainPlayerName) !== gameState.currentLetter.toLowerCase()) {
                 showMessage(`🎯 Player name must start with "${gameState.currentLetter.toUpperCase()}"!`, 'error');
                 gameState.currentStreak = 0;
                 return;
@@ -1169,7 +1522,7 @@
 
             // Valid move
             gameState.usedPlayers.add(normalizedName);
-            gameState.currentLetter = getLastLetter(playerName);
+            gameState.currentLetter = getLastLetter(mainPlayerName);
             gameState.userScore++;
             gameState.currentStreak++;
             
@@ -1179,8 +1532,12 @@
                 showAchievement('speedster');
             }
             
-            addToHistory(playerName, true, responseTime);
+            // Add to history with both input name and main name if different
+            const displayName = inputName !== mainPlayerName ? inputName : null;
+            addToHistory(mainPlayerName, true, responseTime, displayName);
+            
             input.value = '';
+            input.className = 'player-input';
             hideMessage();
             document.getElementById('suggestions').style.display = 'none';
 
@@ -1194,6 +1551,13 @@
             updateGameInfo();
             checkAchievements();
 
+            // Show success message
+            if (displayName) {
+                showMessage(`✅ Great! "${displayName}" (${mainPlayerName}) is correct!`, 'success');
+            } else {
+                showMessage(`✅ Perfect! "${mainPlayerName}" is correct!`, 'success');
+            }
+
             // Computer's turn
             setTimeout(computerTurn, 1500);
         }
@@ -1201,9 +1565,9 @@
         function computerTurn() {
             if (!gameState.gameActive) return;
 
-            const computerPlayer = findValidPlayer(gameState.currentLetter);
+            const computerPlayerData = findValidPlayer(gameState.currentLetter);
             
-            if (!computerPlayer) {
+            if (!computerPlayerData) {
                 // Computer can't find a valid player - user wins!
                 showMessage('🎉 Congratulations! You won! The computer couldn\'t find a valid player.', 'success');
                 gameWon();
@@ -1211,14 +1575,15 @@
             }
 
             // Computer makes a move
+            const computerPlayer = computerPlayerData.name;
             gameState.usedPlayers.add(normalizePlayerName(computerPlayer));
             gameState.currentLetter = getLastLetter(computerPlayer);
             addToHistory(computerPlayer, false);
             
             // Check if user can make a move
-            const userCanMove = footballPlayers.some(player => 
-                !gameState.usedPlayers.has(normalizePlayerName(player)) &&
-                getFirstLetter(player) === gameState.currentLetter.toLowerCase()
+            const userCanMove = footballPlayersData.some(playerData => 
+                !gameState.usedPlayers.has(normalizePlayerName(playerData.name)) &&
+                getFirstLetter(playerData.name) === gameState.currentLetter.toLowerCase()
             );
 
             if (!userCanMove) {
@@ -1279,10 +1644,50 @@
         }
 
         function handleKeyPress(event) {
-            if (event.key === 'Enter') {
-                submitPlayer();
+            const suggestionsEl = document.getElementById('suggestions');
+            const suggestions = suggestionsEl.children;
+            
+            if (event.key === 'ArrowDown') {
+                event.preventDefault();
+                if (suggestionsEl.style.display === 'block' && suggestions.length > 0) {
+                    gameState.selectedSuggestionIndex = Math.min(
+                        gameState.selectedSuggestionIndex + 1, 
+                        suggestions.length - 1
+                    );
+                    updateSuggestionHighlight();
+                }
+            } else if (event.key === 'ArrowUp') {
+                event.preventDefault();
+                if (suggestionsEl.style.display === 'block' && suggestions.length > 0) {
+                    gameState.selectedSuggestionIndex = Math.max(
+                        gameState.selectedSuggestionIndex - 1, 
+                        -1
+                    );
+                    updateSuggestionHighlight();
+                }
+            } else if (event.key === 'Enter') {
+                event.preventDefault();
+                if (gameState.selectedSuggestionIndex >= 0 && suggestions.length > 0) {
+                    const selectedSuggestion = suggestions[gameState.selectedSuggestionIndex];
+                    const playerName = selectedSuggestion.querySelector('.suggestion-name').textContent;
+                    selectSuggestion(playerName);
+                } else {
+                    submitPlayer();
+                }
             } else if (event.key === 'Escape') {
-                document.getElementById('suggestions').style.display = 'none';
+                suggestionsEl.style.display = 'none';
+                gameState.selectedSuggestionIndex = -1;
+            }
+        }
+
+        function updateSuggestionHighlight() {
+            const suggestions = document.getElementById('suggestions').children;
+            for (let i = 0; i < suggestions.length; i++) {
+                if (i === gameState.selectedSuggestionIndex) {
+                    suggestions[i].classList.add('highlighted');
+                } else {
+                    suggestions[i].classList.remove('highlighted');
+                }
             }
         }
 
@@ -1292,10 +1697,12 @@
             const input = document.getElementById('playerInput');
             if (!suggestions.contains(event.target) && event.target !== input) {
                 suggestions.style.display = 'none';
+                gameState.selectedSuggestionIndex = -1;
             }
         });
 
-        // Initialize
+        // Initialize the game
+        initializePlayersIndex();
         updateStats();
         document.getElementById('playerInput').focus();
     </script>
